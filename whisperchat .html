@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whisper Chat</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #181818;
+            color: #ffffff;
+            display: flex;
+            height: 100vh;
+        }
+
+        .container {
+            background: rgba(30, 30, 30, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            width: 300px;
+            overflow-y: auto;
+        }
+
+        h1, h2 {
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background-color: #ff4081;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #ff80ab;
+        }
+
+        .link {
+            margin-top: 10px;
+            color: #ffeb3b;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        #chatSection {
+            display: none;
+            flex-direction: column;
+            align-items: flex-start;
+            width: 100%;
+            overflow-y: auto;
+        }
+
+        #chat {
+            background: #2c2c2c;
+            padding: 15px;
+            border-radius: 10px;
+            height: calc(100vh - 200px);
+            overflow-y: auto;
+            width: 100%;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .videoOption {
+            margin: 10px 0;
+            padding: 10px;
+            background: #ff4081;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            transition: background 0.3s;
+        }
+
+        .videoOption:hover {
+            background: #ff80ab;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #242424;
+            padding: 20px;
+            overflow-y: auto;
+            display: none; /* Initially hidden */
+        }
+
+        .main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        #videoPage {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #2c2c2c;
+            border-radius: 10px;
+            padding: 20px;
+            height: 100vh;
+            color: #ffffff;
+        }
+
+        #videoPage button {
+            width: auto;
+        }
+
+        .chatRoom {
+            padding: 10px;
+            background: #444;
+            border-radius: 5px;
+            margin: 5px 0;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .chatRoom:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar" id="sidebar">
+        <h2>Your Friends</h2>
+        <div id="friendList"></div>
+        <input type="text" id="friendInput" placeholder="Friend's username">
+        <button id="addFriendBtn">Add Friend</button>
+        
+        <h2>Chat Rooms</h2>
+        <div id="chatRoomList">
+            <div class="chatRoom" onclick="openChat('General Chat')">General Chat</div>
+            <div class="chatRoom" onclick="openChat('Tech Talk')">Tech Talk</div>
+            <div class="chatRoom" onclick="openChat('Gaming Zone')">Gaming Zone</div>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="container" id="loginSection">
+            <h1>Whisper Chat</h1>
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button id="loginBtn">Login</button>
+            <div class="link" id="showSignup">Don't have an account? Sign Up</div>
+        </div>
+
+        <div class="container" id="signupSection" style="display: none;">
+            <h1>Sign Up</h1>
+            <input type="text" id="name" placeholder="Name">
+            <input type="email" id="email" placeholder="Email">
+            <input type="text" id="signupUsername" placeholder="Username">
+            <input type="password" id="signupPassword" placeholder="Password">
+            <button id="signupBtn">Sign Up</button>
+            <div class="link" id="showLogin">Already have an account? Login</div>
+            <button id="goBackBtn">Go Back</button>
+        </div>
+
+        <div id="chatSection">
+            <h2>Chat Room</h2>
+            <div id="chat"></div>
+            <div>
+                <input type="text" id="messageInput" placeholder="Type your message...">
+                <button id="sendBtn">Send</button>
+            </div>
+            <h2>Video Options</h2>
+            <div id="videoOptions">
+                <div class="videoOption" onclick="loadVideoPage('Create Video')">Create Video</div>
+                <div class="videoOption" onclick="loadVideoPage('Go Live')">Go Live</div>
+                <div class="videoOption" onclick="loadVideoPage('Watch Reels')">Watch Reels</div>
+            </div>
+        </div>
+
+        <div id="videoPage">
+            <h1 id="videoAction">Loading...</h1>
+            <button id="permissionBtn" style="display:none;" onclick="requestCamera()">Grant Camera Permission</button>
+            <button onclick="goBackToChat()">Go Back</button>
+        </div>
+    </div>
+
+    <script>
+        function showChat() {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('signupSection').style.display = 'none';
+            document.getElementById('chatSection').style.display = 'flex';
+            document.getElementById('sidebar').style.display = 'block'; // Show sidebar
+            document.getElementById('videoPage').style.display = 'none';
+        }
+
+        document.getElementById('loginBtn').onclick = function() {
+            var username = document.getElementById('username').value;
+            var password = document.getElementById('password').value;
+            if (username && password) {
+                alert('Welcome back, ' + username + '!');
+                showChat();
+            }
+        };
+
+        document.getElementById('signupBtn').onclick = function() {
+            var name = document.getElementById('name').value;
+            var email = document.getElementById('email').value;
+            var signupUsername = document.getElementById('signupUsername').value;
+            var signupPassword = document.getElementById('signupPassword').value;
+            if (name && email && signupUsername && signupPassword) {
+                alert('Sign up successful! Welcome, ' + signupUsername + '!');
+                showChat();
+            }
+        };
+
+        document.getElementById('showSignup').onclick = function() {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('signupSection').style.display = 'block';
+        };
+
+        document.getElementById('showLogin').onclick = function() {
+            document.getElementById('signupSection').style.display = 'none';
+            document.getElementById('loginSection').style.display = 'block';
+        };
+
+        document.getElementById('goBackBtn').onclick = function() {
+            document.getElementById('signupSection').style.display = 'none';
+            document.getElementById('loginSection').style.display = 'block';
+        };
+
+        document.getElementById('sendBtn').onclick = function() {
+            var message = document.getElementById('messageInput').value;
+            if (message) {
+                var chatBox = document.getElementById('chat');
+                var messageElement = document.createElement('div');
+                messageElement.textContent = message;
+                chatBox.appendChild(messageElement);
+                document.getElementById('messageInput').value = '';
+            }
+        };
+
+        function loadVideoPage(action) {
+            document.getElementById('chatSection').style.display = 'none';
+            document.getElementById('videoPage').style.display = 'flex';
+            document.getElementById('videoAction').textContent = action + '...';
+            document.getElementById('permissionBtn').style.display = 'block';
+        }
+
+        function requestCamera() {
+            alert("Camera permission granted. Starting live...");
+            // Here you would typically start the camera feed
+        }
+
+        function goBackToChat() {
+            document.getElementById('videoPage').style.display = 'none';
+            document.getElementById('chatSection').style.display = 'flex';
+        }
+
+        function openChat(chatRoom) {
+            document.getElementById('chat').innerHTML = '<h3>' + chatRoom + '</h3>';
+            // Here you can load messages for the selected chat room
+        }
+    </script>
+</body>
+</html>
